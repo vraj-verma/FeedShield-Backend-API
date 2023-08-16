@@ -8,6 +8,8 @@ import {
      HttpException,
      HttpStatus,
      Query,
+     Logger,
+     Inject,
 } from "@nestjs/common";
 const bcrypt = require('bcrypt');
 import { Request, Response } from "express";
@@ -21,10 +23,12 @@ import { ValidationPipe } from "../pipes/joiValidation.pipe";
 import { JoiValidationSchema } from "../validation/schema.validation";
 import { JwtService } from "@nestjs/jwt";
 import { JoinUser } from "src/models/join-user.model";
+import { WINSTON_MODULE_PROVIDER } from "nest-winston";
 
 @Controller('auth')
 export class AuthController {
      constructor(
+          @Inject(WINSTON_MODULE_PROVIDER) private logger: Logger,
           private accountService: AccountService,
           private userService: UserService,
           private jwtService: JwtService,
@@ -115,6 +119,7 @@ export class AuthController {
           response.token = token;
 
           delete response.password;
+          // this.logger.log('info', { url: req.url });
           res.status(200).json(response);
      }
 
@@ -129,7 +134,7 @@ export class AuthController {
 
           const isAlreadyJoined = await this.userService.getUserByEmail(token_decoded.email);
 
-          if (isAlreadyJoined) {
+          if (isAlreadyJoined.joined) {
                throw new HttpException(
                     `User already joined, please login`,
                     HttpStatus.BAD_REQUEST

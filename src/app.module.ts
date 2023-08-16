@@ -1,3 +1,4 @@
+import { WinstonModule } from 'nest-winston';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -8,6 +9,10 @@ import { UserService } from './services/user.service';
 import { JwtModule } from '@nestjs/jwt';
 import { AccountController } from './controllers/account.controller';
 import { JwtStrategy } from './services/auth/jwt.strategy';
+import winston from 'winston';
+import { LoggerModule } from './logger/logger.module';
+
+
 
 @Module({
   imports: [
@@ -16,6 +21,7 @@ import { JwtStrategy } from './services/auth/jwt.strategy';
       secret: 'secretOrKey',
       signOptions: { expiresIn: '1h' },
     }),
+    LoggerModule,
   ],
   controllers: [
     AppController,

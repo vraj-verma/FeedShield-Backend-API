@@ -27,4 +27,11 @@ export class JoiValidationSchema {
         confirm_password: joi.string().min(5).required()
     });
 
+    static updateUserSchema = joi.object({
+        name: joi.string().optional().allow(null, ''),
+        role: joi.valid(...Object.values(Role)).optional().allow(null, ''),
+        status: joi.valid(...Object.values(Status)).optional().allow(null, ''),
+        access: joi.boolean().optional().allow(null, ''),
+    })
+
 }

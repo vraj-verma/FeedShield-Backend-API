@@ -1,7 +1,8 @@
 import { Inject, Injectable } from "@nestjs/common";
 import mysql, { ResultSetHeader, RowDataPacket } from 'mysql2/promise'
 import { Signup } from "../models/signup.model";
-import { JoinUser } from "src/models/join-user.model";
+import { JoinUser } from "../models/join-user.model";
+import { UpdateUser } from "../models/create-user.model";
 
 @Injectable()
 export class UserService {
@@ -11,7 +12,7 @@ export class UserService {
      ) { }
 
      async createUser(user: Signup) {
-          const sqlQuery = `INSERT INTO Users set ?`;
+          const sqlQuery = `INSERT INTO Users SET ?`;
           const [response] = await this.db.query<ResultSetHeader>(sqlQuery, [user]);
           return response.insertId;
      }
@@ -22,14 +23,28 @@ export class UserService {
           return response ? response[0] : null;
      }
 
+     async getUserById(id: string) {
+          const sqlQuery = `SELECT * FROM Users WHERE user_id = ?`;
+          const [response] = await this.db.query<RowDataPacket[]>(sqlQuery, [id]);
+          return response ? response[0] : null;
+     }
+
+     async updateUser(id: string, updateUser: UpdateUser) {
+          const sqlQuery = `UPDATE Users SET ? WHERE user_id = ?`;
+          const [response] = await this.db.query<ResultSetHeader>(sqlQuery, [updateUser, id]);
+          return response ? response.affectedRows > 0 : null
+     }
+
 
      async joinUser(joinUser: JoinUser) {
-          const sqlQuery = `UPDATE Users SET password = ?, joined = ? WHERE user_id = ?`;
+          const sqlQuery = `UPDATE Users SET password = ?, joined = ?, status = ?, created_at = ? WHERE user_id = ?`;
           const [response] = await this.db.query<ResultSetHeader>(sqlQuery,
                [
                     joinUser.password,
                     joinUser.joined,
-                    joinUser.user_id
+                    joinUser.status,
+                    joinUser.created_at,
+                    joinUser.user_id,
                ]
           );
 
