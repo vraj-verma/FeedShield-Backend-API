@@ -9,7 +9,8 @@ export class AuthUser {
      email?: string;
      status?: Status;
      role?: Role;
-     created_at?: Date;
+     created_at?: Date | string;
      password?: string;
      token?: string;
+     access?: boolean;
 }

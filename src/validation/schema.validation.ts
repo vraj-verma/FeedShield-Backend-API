@@ -32,6 +32,18 @@ export class JoiValidationSchema {
         role: joi.valid(...Object.values(Role)).optional().allow(null, ''),
         status: joi.valid(...Object.values(Status)).optional().allow(null, ''),
         access: joi.boolean().optional().allow(null, ''),
-    })
+    });
+
+    static createFeedSchema = joi.object({
+        name: joi.string().required(),
+        description: joi.string().required(),
+        url: joi.string().uri().required()
+    });
+
+    static updateFeedSchema = joi.object({
+        name: joi.string().optional().allow(null, ''),
+        description: joi.string().optional().allow(null, ''),
+        url: joi.string().uri().optional().allow(null, '')
+    });
 
 }

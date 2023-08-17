@@ -6,5 +6,5 @@ export class JoinUser {
      password?: string;
      confirm_password?: string;
      status: Status;
-     created_at: Date;
+     created_at: Date | string;
 }

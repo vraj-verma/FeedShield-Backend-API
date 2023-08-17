@@ -55,12 +55,13 @@ export class AuthController {
           signup.password = hash;
           signup.role = Role.Super_Admin;
           signup.status = Status.Active;
-          signup.created_at = new Date();
+          signup.created_at = new Date().toLocaleString();
           signup.joined = true;
 
           const account_id = await this.accountService.createAccount({
                user_limit: 5,
-               created_at: new Date()
+               created_at: new Date().toLocaleString()
+
           });
 
           const user_id = await this.userService.createUser({
@@ -74,7 +75,7 @@ export class AuthController {
                email: signup.email,
                role: Role.Super_Admin,
                user_limit: 5,
-               created_at: new Date(),
+               created_at: new Date().toLocaleString()               ,
           }
 
           res.status(201).json(authUser);
@@ -151,14 +152,13 @@ export class AuthController {
           const salt = await bcrypt.genSalt(6);
           const hash = await bcrypt.hash(join_user.password, salt);
 
-
           const response = await this.userService.joinUser(
                {
                     password: hash,
                     joined: true,
                     user_id: token_decoded.user_id,
                     status: Status.Active,
-                    created_at: new Date()
+                    created_at: new Date().toLocaleString()
                }
           );
 

@@ -8,7 +8,7 @@ export class Signup {
      email: string;
      password?: string;
      status?: Status;
-     created_at?: Date;
+     created_at?: Date | string;
      joined?: boolean;
 }
 

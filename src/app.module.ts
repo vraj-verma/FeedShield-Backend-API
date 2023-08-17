@@ -11,6 +11,8 @@ import { AccountController } from './controllers/account.controller';
 import { JwtStrategy } from './services/auth/jwt.strategy';
 import winston from 'winston';
 import { LoggerModule } from './logger/logger.module';
+import { FeedService } from './services/feed.service';
+import { FeedController } from './controllers/feed.controller';
 
 
 
@@ -27,12 +29,14 @@ import { LoggerModule } from './logger/logger.module';
     AppController,
     AuthController,
     AccountController,
+    FeedController,
   ],
   providers: [
     UserService,
     AccountService,
     JwtStrategy,
     AppService,
+    FeedService,
   ],
 })
 export class AppModule { }

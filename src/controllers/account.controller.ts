@@ -22,7 +22,7 @@ export class AccountController {
           private userService: UserService,
      ) { }
 
-     @Roles(Role.Super_Admin)
+     @Roles(Role.Super_Admin, Role.Admin)
      @Post()
      async createUser(
           @Req() req,
@@ -36,6 +36,13 @@ export class AccountController {
           if (isAlreadyExist) {
                throw new HttpException(
                     `User already exist, login pleasse`,
+                    HttpStatus.BAD_REQUEST
+               );
+          }
+
+          if (Role.Admin === user.role && !authUser.access) {
+               throw new HttpException(
+                    `Admin can't create user with Admin role, Role 'Basic' user can be created by Admin`,
                     HttpStatus.BAD_REQUEST
                );
           }
@@ -72,7 +79,7 @@ export class AccountController {
           })
      }
 
-     @Roles(Role.Super_Admin)
+     @Roles(Role.Super_Admin, Role.Admin)
      @Put(':id')
      async updateUser(
           @Req() req: Request,
@@ -88,6 +95,7 @@ export class AccountController {
                     HttpStatus.NOT_FOUND
                );
           }
+
           const response = await this.userService.updateUser(id, updateUser);
           if (!response) {
                throw new HttpException(
