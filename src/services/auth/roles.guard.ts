@@ -20,14 +20,14 @@ import {
        const user = request.user;
        if (!user || !user.role) {
          throw new HttpException(
-           `Your current role: ${user.role} does not have permission to use this API. Please contact your account administrator.`,
+           `Your current role: ${user.role} does not have permission to use this API. Please contact your Super Admin.`,
            HttpStatus.FORBIDDEN,
          );
        }
        const userRole: string = user.role.trim();
        if (!roles.includes(userRole)) {
          throw new HttpException(
-           `Your current role: ${userRole} does not have permission to use this API. Please contact your account administrator.`,
+           `Your current role: ${userRole} does not have permission to use this API. Please contact your Super Admin.`,
            HttpStatus.FORBIDDEN,
          );
        }

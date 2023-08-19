@@ -8,8 +8,8 @@ import {
      HttpException,
      HttpStatus,
      Query,
-     Logger,
-     Inject,
+     Delete,
+     UseGuards,
 } from "@nestjs/common";
 const bcrypt = require('bcrypt');
 import { Request, Response } from "express";
@@ -22,18 +22,17 @@ import { Signin } from "../models/signin.model";
 import { ValidationPipe } from "../pipes/joiValidation.pipe";
 import { JoiValidationSchema } from "../validation/schema.validation";
 import { JwtService } from "@nestjs/jwt";
-import { JoinUser } from "src/models/join-user.model";
-import { WINSTON_MODULE_PROVIDER } from "nest-winston";
-
+import { JoinUser } from "../models/join-user.model";
+import { JwtAuthGuard } from "../services/auth/jwt-auth.guard";
+import { RolesGuard } from "../services/auth/roles.guard";
+import { Roles } from "../services/auth/roles.decorator";
 @Controller('auth')
 export class AuthController {
      constructor(
-          @Inject(WINSTON_MODULE_PROVIDER) private logger: Logger,
           private accountService: AccountService,
           private userService: UserService,
           private jwtService: JwtService,
      ) { }
-
 
      @Post('signup')
      async signup(
@@ -57,9 +56,11 @@ export class AuthController {
           signup.status = Status.Active;
           signup.created_at = new Date().toLocaleString();
           signup.joined = true;
+          signup.access = true;
 
           const account_id = await this.accountService.createAccount({
                user_limit: 5,
+               user_used: 1,
                created_at: new Date().toLocaleString()
 
           });
@@ -75,7 +76,7 @@ export class AuthController {
                email: signup.email,
                role: Role.Super_Admin,
                user_limit: 5,
-               created_at: new Date().toLocaleString()               ,
+               created_at: new Date().toLocaleString(),
           }
 
           res.status(201).json(authUser);
@@ -120,7 +121,6 @@ export class AuthController {
           response.token = token;
 
           delete response.password;
-          // this.logger.log('info', { url: req.url });
           res.status(200).json(response);
      }
 
@@ -170,7 +170,32 @@ export class AuthController {
           }
 
           res.status(200).json({ message: `Sucessfully Joined` })
+     }
+
+     @UseGuards(JwtAuthGuard, RolesGuard)
+     @Roles(Role.Super_Admin)
+     @Delete('delete-account')
+     async deleteAccount(
+          @Req() req: Request,
+          @Res() res: Response,
+     ) {
+          const token_decoded = await this.jwtService.verify(req.headers.authorization.split(' ')[1]);
+
+          // get account_id from token
+          const authUser: AuthUser = await this.userService.getUserByEmail(token_decoded.email);
+
+          const response = await this.accountService.deleteAccount(authUser.account_id);
+          const deleteUsers = await this.userService.deleteUsers(authUser.account_id);
+          if (!response && !deleteUsers) {
+               throw new HttpException(
+                    `Something went wrong, try again`,
+                    HttpStatus.NOT_MODIFIED
+               );
+          }
+
+          res.status(200).json({ message: `Account deleted successfully` });
 
      }
+
 
 }

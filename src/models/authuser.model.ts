@@ -6,6 +6,7 @@ export class AuthUser {
      account_id?: number;
      name?: string;
      user_limit?: number;
+     user_used?: number;
      email?: string;
      status?: Status;
      role?: Role;

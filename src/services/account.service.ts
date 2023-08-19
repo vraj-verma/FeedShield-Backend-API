@@ -11,7 +11,7 @@ export class AccountService {
 
      async createAccount(signup: Account): Promise<number> {
           const sqlQuery = `INSERT INTO Accounts set ?`;
-          const [response] = await this.db.query<ResultSetHeader>(sqlQuery, [signup]);
+          const [response] = await this.db.query<ResultSetHeader>(sqlQuery, signup);
           return response.insertId;
      }
 
@@ -19,5 +19,17 @@ export class AccountService {
           const sqlQuery = `SELECT * FROM Accounts WHERE email = ?`;
           const [response] = await this.db.query<RowDataPacket[]>(sqlQuery, [email]);
           return response ? response[0] : null;
+     }
+
+     async deleteAccount(account_id: number): Promise<boolean> {
+          const sqlQuery = `DELETE FROM Accounts WHERE account_id = ?`;
+          const [response] = await this.db.query<ResultSetHeader>(sqlQuery, account_id);
+          return response ? response.affectedRows > 0 : false;
+     }
+
+     async updateAccount(account_id: number, data: any): Promise<boolean> {
+          const sqlQuery = `UPDATE Accounts SET = ? WHERE account_id = ?`;
+          const [response] = await this.db.query<ResultSetHeader>(sqlQuery, [data.user_used, account_id]);
+          return response ? response.affectedRows > 0 : false;
      }
 }

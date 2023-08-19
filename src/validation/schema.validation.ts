@@ -19,7 +19,8 @@ export class JoiValidationSchema {
     static createUserSchema = joi.object({
         name: joi.string().optional().allow(null, ''),
         email: joi.string().email().required(),
-        role: joi.valid(...Object.values(Role))
+        role: joi.valid(...Object.values(Role)),
+        access: joi.boolean().optional().allow(null, ''),
     });
 
     static joinUserSchema = joi.object({

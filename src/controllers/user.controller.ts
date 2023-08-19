@@ -1,10 +1,21 @@
-import { Controller, Get, Post, Body, Req, Res, UseGuards, HttpException, HttpStatus, Query, Put, Param } from "@nestjs/common";
+import {
+     Controller,
+     Post,
+     Body,
+     Req,
+     Res,
+     UseGuards,
+     HttpException,
+     HttpStatus,
+     Put,
+     Param, Delete
+} from "@nestjs/common";
 import { AccountService } from "../services/account.service";
 import { Request, Response } from "express";
 import { JwtAuthGuard } from "../services/auth/jwt-auth.guard";
 import { JwtService } from "@nestjs/jwt";
 import { AuthUser } from "../models/authuser.model";
-import { Role, Signup } from "../models/signup.model";
+import { Role } from "../models/signup.model";
 import { UserService } from "../services/user.service";
 import { CreateUser, UpdateUser } from "../models/create-user.model";
 import { ValidationPipe } from "../pipes/joiValidation.pipe";
@@ -16,10 +27,11 @@ const bcrypt = require('bcrypt')
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('user')
-export class AccountController {
+export class UserController {
      constructor(
           private jwtService: JwtService,
           private userService: UserService,
+          private accountService: AccountService,
      ) { }
 
      @Roles(Role.Super_Admin, Role.Admin)
@@ -30,6 +42,13 @@ export class AccountController {
           @Body(new ValidationPipe(JoiValidationSchema.createUserSchema)) user: CreateUser,
      ) {
           const authUser = <AuthUser>req.user;
+
+          if (authUser.user_used > authUser.user_limit) {
+               throw new HttpException(
+                    `User limit exceeded, please upgrade your plan or delete some users`,
+                    HttpStatus.BAD_REQUEST
+               );
+          }
 
           const isAlreadyExist = await this.userService.getUserByEmail(user.email);
 
@@ -42,9 +61,13 @@ export class AccountController {
 
           if (Role.Admin === user.role && !authUser.access) {
                throw new HttpException(
-                    `Admin can't create user with Admin role, Role 'Basic' user can be created by Admin`,
+                    `Admin can't create user with role 'Admin', 'Basic' user can be created by Admin`,
                     HttpStatus.BAD_REQUEST
                );
+          }
+
+          if (!authUser.access) {
+               user.access = false;
           }
 
           if (user.role === Role.Super_Admin) {
@@ -55,7 +78,8 @@ export class AccountController {
           };
 
           user.account_id = authUser.account_id;
-          user.access = true;
+          user.created_at = new Date().toLocaleString();
+          authUser.user_used = authUser.user_used + 1;
 
           const user_id = await this.userService.createUser(user);
           if (!user_id) {
@@ -74,17 +98,17 @@ export class AccountController {
           const token = this.jwtService.sign(payload);
 
           res.status(201).json({
-               message: `User created, please join with the token`,
+               message: `User created with id: ${user_id}, please join with the token`,
                token
           })
      }
 
-     @Roles(Role.Super_Admin, Role.Admin)
+     @Roles(Role.Super_Admin)
      @Put(':id')
      async updateUser(
           @Req() req: Request,
           @Res() res: Response,
-          @Param('id') id: string,
+          @Param('id') id: number,
           @Body(new ValidationPipe(JoiValidationSchema.updateUserSchema)) updateUser: UpdateUser
      ) {
 
@@ -96,6 +120,8 @@ export class AccountController {
                );
           }
 
+          updateUser.updated_at = new Date().toLocaleString();
+
           const response = await this.userService.updateUser(id, updateUser);
           if (!response) {
                throw new HttpException(
@@ -104,5 +130,46 @@ export class AccountController {
                );
           }
           res.status(200).json({ message: `User with id: ${id} updated` })
+     }
+
+     @Roles(Role.Super_Admin, Role.Admin)
+     @Delete(':user_id')
+     async deleteUser(
+          @Req() req: any,
+          @Res() res: Response,
+          @Param('user_id') user_id: number,
+     ) {
+
+          const authUser: AuthUser = req.user;
+
+          const isExist = await this.userService.getUserById(user_id);
+          if (!isExist) {
+               throw new HttpException(
+                    `User not found`,
+                    HttpStatus.NOT_FOUND
+               );
+          }
+
+          if (authUser.role === Role.Admin && !authUser.access && isExist.role !== Role.Basic) {
+               throw new HttpException(
+                    `You don't have access to delete, please contact to Super Admin`,
+                    HttpStatus.BAD_REQUEST
+               );
+          }
+
+          const response = await this.userService.deleteUserByUserId(user_id);
+          if (!response) {
+               throw new HttpException(
+                    `User not deleted`,
+                    HttpStatus.NOT_IMPLEMENTED
+               );
+          }
+
+          if (authUser.role === Role.Super_Admin) {
+               const userUsed = authUser.user_used - 1;
+               await this.accountService.updateAccount(authUser.user_id, { user_used: userUsed });
+          }
+
+          res.status(200).json({ message: `User with id: ${user_id} deleted` })
      }
 }

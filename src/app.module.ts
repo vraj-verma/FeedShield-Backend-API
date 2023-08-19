@@ -1,5 +1,4 @@
-import { WinstonModule } from 'nest-winston';
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthController } from './controllers/auth.controller';
@@ -7,28 +6,28 @@ import { AccountService } from './services/account.service';
 import { MysqlModule } from './db/mysql.module';
 import { UserService } from './services/user.service';
 import { JwtModule } from '@nestjs/jwt';
-import { AccountController } from './controllers/account.controller';
-import { JwtStrategy } from './services/auth/jwt.strategy';
-import winston from 'winston';
-import { LoggerModule } from './logger/logger.module';
+import { UserController } from './controllers/user.controller';
+import { JwtStrategy } from './services/auth/jwt.strategy'; 
 import { FeedService } from './services/feed.service';
 import { FeedController } from './controllers/feed.controller';
-
-
+import { ScheduleModule } from '@nestjs/schedule';
+import { Logger } from './logger/logger.service';
+import { SuperAdminModule } from './admin/superAdmin.module';
 
 @Module({
   imports: [
     MysqlModule,
     JwtModule.register({
       secret: 'secretOrKey',
-      signOptions: { expiresIn: '1h' },
+      signOptions: { expiresIn: '1d' },
     }),
-    LoggerModule,
+    ScheduleModule.forRoot(),
+    SuperAdminModule,
   ],
   controllers: [
     AppController,
     AuthController,
-    AccountController,
+    UserController,
     FeedController,
   ],
   providers: [
@@ -39,4 +38,8 @@ import { FeedController } from './controllers/feed.controller';
     FeedService,
   ],
 })
-export class AppModule { }
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(Logger).forRoutes('*');
+  }
+}

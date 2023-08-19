@@ -4,10 +4,11 @@ export class Signup {
      user_id?: number;
      account_id?: number;
      name?: string;
-     role?: Role;
+     role: Role;
      email: string;
      password?: string;
      status?: Status;
+     access?: boolean;
      created_at?: Date | string;
      joined?: boolean;
 }

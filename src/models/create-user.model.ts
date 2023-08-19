@@ -7,6 +7,7 @@ export class CreateUser {
      email: string;
      role: Role;
      access?: boolean;
+     created_at?: Date | string;
 }
 
 export class UpdateUser {
@@ -15,4 +16,5 @@ export class UpdateUser {
      role?: Role;
      status?: Status;
      access?: boolean;
+     updated_at?: Date | string;
 }
