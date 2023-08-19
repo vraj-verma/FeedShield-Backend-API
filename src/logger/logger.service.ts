@@ -8,7 +8,7 @@ import { AuthUser } from '../models/authuser.model';
 
 @Injectable()
 export class Logger implements NestMiddleware {
-     private logFolder = path.join('src/logss');
+     private logFolder = path.join('src/files');
      private logFile: string;
      private jwtService: JwtService;
 

@@ -6,7 +6,7 @@ import * as path from 'path';
 export class SuperAdminService {
      constructor() { }
 
-     folderPath = path.join('src/logss');
+     folderPath = path.join('src/files');
 
      async getLogs() {
           try {
