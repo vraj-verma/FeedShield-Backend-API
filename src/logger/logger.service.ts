@@ -36,7 +36,7 @@ export class Logger implements NestMiddleware {
                const filePath = path.join(this.logFolder, file);
                const fileStats = fs.statSync(filePath);
                const fileAge = currentTime - fileStats.mtime.getTime();
-               if (fileAge > 2 * 60 * 1000) {
+               if (fileAge > 30 * 60 * 1000) {
                     fs.unlinkSync(filePath);
                }
           });
