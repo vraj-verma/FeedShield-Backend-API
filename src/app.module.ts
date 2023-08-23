@@ -38,8 +38,13 @@ import { SuperAdminModule } from './admin/superAdmin.module';
     FeedService,
   ],
 })
+
+
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(Logger).forRoutes('*');
   }
 }
+
+// for development
+// export class AppModule {}

@@ -12,8 +12,8 @@ export class JoiValidationSchema {
     });
 
     static signinSchema = joi.object({
-        email: joi.string().min(2).required(),
-        password: joi.string().min(5).required()
+        email: joi.string().required(),
+        password: joi.string().min(5).max(30).required()
     });
 
     static createUserSchema = joi.object({
@@ -24,8 +24,8 @@ export class JoiValidationSchema {
     });
 
     static joinUserSchema = joi.object({
-        password: joi.string().min(5).required(),
-        confirm_password: joi.string().min(5).required()
+        password: joi.string().min(5).max(30).required(),
+        confirm_password: joi.string().min(5).max(30).required()
     });
 
     static updateUserSchema = joi.object({

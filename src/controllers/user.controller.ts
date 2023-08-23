@@ -37,13 +37,14 @@ export class UserController {
      @Roles(Role.Super_Admin, Role.Admin)
      @Post()
      async createUser(
-          @Req() req,
+          @Req() req: any,
           @Res() res: Response,
           @Body(new ValidationPipe(JoiValidationSchema.createUserSchema)) user: CreateUser,
      ) {
-          const authUser = <AuthUser>req.user;
+          const authUser: AuthUser = req.user;
 
-          if (authUser.user_used > authUser.user_limit) {
+          console.log(authUser, '***')
+          if (authUser.user_used >= authUser.user_limit) {
                throw new HttpException(
                     `User limit exceeded, please upgrade your plan or delete some users`,
                     HttpStatus.BAD_REQUEST
@@ -80,6 +81,7 @@ export class UserController {
           user.account_id = authUser.account_id;
           user.created_at = new Date().toLocaleString();
           authUser.user_used = authUser.user_used + 1;
+          await this.accountService.updateAccount(authUser.user_id, { user_used: authUser.user_used });
 
           const user_id = await this.userService.createUser(user);
           if (!user_id) {
@@ -87,7 +89,7 @@ export class UserController {
                     `User not created, try again`,
                     HttpStatus.NOT_IMPLEMENTED
                );
-          }
+          } 
 
           const payload = {
                email: user.email,
@@ -166,8 +168,7 @@ export class UserController {
           }
 
           if (authUser.role === Role.Super_Admin) {
-               const userUsed = authUser.user_used - 1;
-               await this.accountService.updateAccount(authUser.user_id, { user_used: userUsed });
+               await this.accountService.updateAccount(authUser.user_id, { user_used: authUser.user_used - 1 });
           }
 
           res.status(200).json({ message: `User with id: ${user_id} deleted` })

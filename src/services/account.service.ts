@@ -28,7 +28,7 @@ export class AccountService {
      }
 
      async updateAccount(account_id: number, data: any): Promise<boolean> {
-          const sqlQuery = `UPDATE Accounts SET = ? WHERE account_id = ?`;
+          const sqlQuery = `UPDATE Accounts SET user_used = ? WHERE account_id = ?`;
           const [response] = await this.db.query<ResultSetHeader>(sqlQuery, [data.user_used, account_id]);
           return response ? response.affectedRows > 0 : false;
      }

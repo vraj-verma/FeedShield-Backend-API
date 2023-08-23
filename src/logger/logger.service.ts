@@ -20,7 +20,7 @@ export class Logger implements NestMiddleware {
           }, 5 * 60 * 1000);
           setInterval(() => {
                this.deleteOldLogs();
-          }, 2 * 60 * 1000);
+          }, 5 * 60 * 1000);
      }
 
      private createLogFile() {
@@ -36,7 +36,7 @@ export class Logger implements NestMiddleware {
                const filePath = path.join(this.logFolder, file);
                const fileStats = fs.statSync(filePath);
                const fileAge = currentTime - fileStats.mtime.getTime();
-               if (fileAge > 30 * 60 * 1000) {
+               if (fileAge > 5 * 60 * 1000) {
                     fs.unlinkSync(filePath);
                }
           });
@@ -44,18 +44,23 @@ export class Logger implements NestMiddleware {
 
      use(req: Request, res: Response, next: NextFunction) {
 
-          // decode user by token
-          const token = req.headers?.authorization?.split(' ')[1];
           let authUser: AuthUser;
 
+          // decode user by token
+          const token = req.headers?.authorization?.split(' ')[1];
+
           try {
-               authUser = this.jwtService.verify(token);
+               if (req.originalUrl === '/auth/signin' || req.originalUrl === '/auth/signup') {
+                    authUser = req.body;
+               } else if (token) {
+                    authUser = this.jwtService.verify(token);
+               }
           } catch (error) {
                console.error('Sometthing went wrong', error.message);
           }
 
           const logMessage = {
-               Time: `[${new Date().toISOString()}]`,
+               Time: `${new Date().toISOString()}`,
                User: `${authUser ? authUser.email : req.body.email}`,
                Method: `${req.method} ${req.url}`,
                Operation: `${req.originalUrl}`,

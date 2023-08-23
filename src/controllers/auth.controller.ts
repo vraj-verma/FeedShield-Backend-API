@@ -102,6 +102,13 @@ export class AuthController {
                );
           }
 
+          if (!response.joined) {
+               throw new HttpException(
+                    `Account is not joined, please join`,
+                    HttpStatus.UNAUTHORIZED
+               );
+          }
+
           // decrypt password
           const passwordMatch = await bcrypt.compare(signin.password, response.password);
           if (!passwordMatch) {

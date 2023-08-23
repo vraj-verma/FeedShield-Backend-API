@@ -84,7 +84,7 @@ export class FeedController {
           @Param('id') feed_id: string,
           @Body(new ValidationPipe(JoiValidationSchema.updateFeedSchema)) feed: Feeds
      ) {
-          const authUser = <AuthUser>req.user;
+          const authUser: AuthUser = req.user;
           feed.user_id = authUser.user_id;
           feed.updated_at = new Date().toLocaleString();
 
