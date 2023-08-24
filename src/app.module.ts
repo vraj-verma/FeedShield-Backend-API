@@ -42,6 +42,9 @@ import { ConfigModule } from '@nestjs/config';
     AppService,
     FeedService,
   ],
+  exports: [
+    UserService,
+  ]
 })
 
 

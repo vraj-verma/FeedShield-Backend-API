@@ -5,16 +5,20 @@ import { JwtAuthGuard } from "../services/auth/jwt-auth.guard";
 import { RolesGuard } from "../services/auth/roles.guard";
 import { Roles } from "../services/auth/roles.decorator";
 import { Role } from "../models/signup.model";
+import { UserService } from "../services/user.service";
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Controller('logs')
+@Controller('admin')
 export class SuperAdminController {
      constructor(
-          private readonly superAdminService: SuperAdminService,
+          private superAdminService: SuperAdminService,
+          private userService: UserService,
      ) { }
 
+
+
      @Roles(Role.Super_Admin)
-     @Get()
+     @Get('logs')
      async getLogs(
           @Req() req: Request,
           @Res() res: Response,
@@ -33,6 +37,22 @@ export class SuperAdminController {
           const objToJsson = objResponse.map(objectString => JSON.parse(objectString));
 
           res.status(200).json(objToJsson);
+     }
+
+     @Roles(Role.Super_Admin)
+     @Get('users')
+     async getUsers(
+          @Req() req: Request,
+          @Res() res: Response,
+     ) {
+          const response = await this.userService.getUsers();
+          if (!response) {
+               throw new HttpException(
+                    'No users found',
+                    HttpStatus.NOT_FOUND
+               );
+          }
+          res.status(200).json(response);
      }
 
 }

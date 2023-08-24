@@ -3,6 +3,7 @@ import mysql, { ResultSetHeader, RowDataPacket } from 'mysql2/promise'
 import { Signup } from "../models/signup.model";
 import { JoinUser } from "../models/join-user.model";
 import { UpdateUser } from "../models/create-user.model";
+import { AuthUser } from "src/models/authuser.model";
 
 @Injectable()
 export class UserService {
@@ -37,7 +38,6 @@ export class UserService {
           return response ? response.affectedRows > 0 : null
      }
 
-
      async joinUser(joinUser: JoinUser) {
           const sqlQuery = `UPDATE Users SET password = ?, joined = ?, status = ?, created_at = ? WHERE user_id = ?`;
           const [response] = await this.db.query<ResultSetHeader>(sqlQuery,
@@ -63,5 +63,11 @@ export class UserService {
           const sqlQuery = `DELETE FROM Users WHERE user_id = ?`;
           const [response] = await this.db.query<ResultSetHeader>(sqlQuery, user_id);
           return response ? response.affectedRows > 0 : false;
+     }
+
+     async getUsers(): Promise<AuthUser[]> {
+          const sqlQuery = `SELECT * FROM Users WHERE role <> 'Super Admin'`;
+          const [response] = await this.db.query<RowDataPacket[]>(sqlQuery);
+          return response ? response as [AuthUser] : [];
      }
 }
