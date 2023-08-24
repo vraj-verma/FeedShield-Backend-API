@@ -58,7 +58,7 @@ export class FeedController {
                }
           )
      }
-
+ 
      @Roles(Role.Super_Admin)
      @Get()
      async getFeeds(
@@ -68,7 +68,7 @@ export class FeedController {
           const response = await this.feedService.getFeeds();
           if (!response) {
                throw new HttpException(
-                    `NO feeds found`,
+                    `No feeds found`,
                     HttpStatus.NOT_FOUND
                );
           }

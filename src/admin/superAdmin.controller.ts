@@ -7,7 +7,7 @@ import { Roles } from "../services/auth/roles.decorator";
 import { Role } from "../models/signup.model";
 import { UserService } from "../services/user.service";
 
-@UseGuards(JwtAuthGuard, RolesGuard)
+
 @Controller('admin')
 export class SuperAdminController {
      constructor(
@@ -16,7 +16,7 @@ export class SuperAdminController {
      ) { }
 
 
-
+     @UseGuards(JwtAuthGuard, RolesGuard)
      @Roles(Role.Super_Admin)
      @Get('logs')
      async getLogs(
@@ -39,7 +39,7 @@ export class SuperAdminController {
           res.status(200).json(objToJsson);
      }
 
-     @Roles(Role.Super_Admin)
+     // @Roles(Role.Super_Admin)
      @Get('users')
      async getUsers(
           @Req() req: Request,
