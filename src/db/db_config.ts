@@ -1,5 +1,4 @@
 import * as mysql from 'mysql2/promise';
-require('dotenv').config(); 
 
 export const mysqlConfig = [
      {
