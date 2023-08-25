@@ -5,7 +5,7 @@ export class AuthUser {
      user_id?: number;
      account_id?: number;
      name?: string;
-     user_limit?: number;
+     user_limit?: number = 5;
      user_used?: number;
      email?: string;
      status?: Status;
@@ -15,4 +15,5 @@ export class AuthUser {
      password?: string;
      token?: string;
      access?: boolean;
+     message?: string;
 }

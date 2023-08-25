@@ -26,6 +26,7 @@ import { JoinUser } from "../models/join-user.model";
 import { JwtAuthGuard } from "../services/auth/jwt-auth.guard";
 import { RolesGuard } from "../services/auth/roles.guard";
 import { Roles } from "../services/auth/roles.decorator";
+import { OAuthGuard } from "src/services/oauth/google.guard";
 @Controller('auth')
 export class AuthController {
      constructor(
@@ -75,7 +76,7 @@ export class AuthController {
                name: signup.name,
                email: signup.email,
                role: Role.Super_Admin,
-               user_limit: 5,
+               // user_limit: 5,
                created_at: new Date().toLocaleString(),
           }
 
@@ -89,6 +90,8 @@ export class AuthController {
           @Body(new ValidationPipe(JoiValidationSchema.signinSchema)) signin: Signin
      ) {
           const response: AuthUser = await this.userService.getUserByEmail(signin.email);
+          console.log(response, 'response')
+          console.log(signin, 'signin')
           if (!response) {
                throw new HttpException(
                     `Account with email: ${signin.email} does not exist, please signup`,
@@ -204,5 +207,71 @@ export class AuthController {
 
      }
 
+     @UseGuards(OAuthGuard)
+     @Get('google')
+     async googleAuth(
+          @Req() req: Request | any,
+          @Res() res: Response
+     ) {
+          console.log(req.user)
+     }
 
+     @UseGuards(OAuthGuard)
+     @Get('google/redirect')
+     async googleAuthRedirect(
+          @Req() req: Request | any,
+          @Res() res: Response,
+     ) {
+          const response: AuthUser = await this.userService.getUserByEmail(req.user.email);
+
+          // if account does not exits
+          if (!response) {
+               const account_id = await this.accountService.createAccount({
+                    user_limit: 5,
+                    user_used: 1,
+                    created_at: new Date().toLocaleString()
+               });
+
+               // saving custom password as '123456' only in case of google auth
+               const salt = await bcrypt.genSalt(6);
+               const hash = await bcrypt.hash('123456', salt);
+
+               const user_id = await this.userService.createUser({
+                    name: req.user.name,
+                    email: req.user.email,
+                    password: hash,
+                    role: Role.Super_Admin,
+                    status: Status.Active,
+                    created_at: new Date().toLocaleString(),
+                    joined: true,
+                    access: true,
+                    account_id
+               });
+
+               const authUser: AuthUser = {
+                    user_id,
+                    account_id,
+                    name: req.user.name,
+                    email: req.user.email,
+                    role: Role.Super_Admin,
+                    created_at: new Date().toLocaleString(),
+                    message: `Since you are using google auth, your password is '123456'.Please change it after login`
+               }
+
+               return res.status(201).json(authUser);
+          }
+
+          // if account exits
+          const payload = {
+               email: req.user.email,
+               account_id: response.account_id,
+               user_id: response.user_id
+          }
+
+          const token = this.jwtService.sign(payload);
+          response.token = token;
+
+          res.status(200).json(response);
+
+     }
 }

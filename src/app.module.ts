@@ -10,10 +10,11 @@ import { UserController } from './controllers/user.controller';
 import { JwtStrategy } from './services/auth/jwt.strategy';
 import { FeedService } from './services/feed.service';
 import { FeedController } from './controllers/feed.controller';
-// import { ScheduleModule } from '@nestjs/schedule';
 import { Logger } from './logger/logger.service';
 import { SuperAdminModule } from './admin/superAdmin.module';
 import { ConfigModule } from '@nestjs/config';
+import { GoogleStrategy } from './services/oauth/google.strategy';
+import { OAuthGuard } from './services/oauth/google.guard';
 
 @Module({
   imports: [
@@ -26,7 +27,6 @@ import { ConfigModule } from '@nestjs/config';
       secret: process.env.APP_SECRET_KEY,
       signOptions: { expiresIn: '1d' },
     }),
-    // ScheduleModule.forRoot(),
     SuperAdminModule,
   ],
   controllers: [
@@ -41,12 +41,13 @@ import { ConfigModule } from '@nestjs/config';
     JwtStrategy,
     AppService,
     FeedService,
+    GoogleStrategy,
+    OAuthGuard
   ],
   exports: [
     UserService,
   ]
 })
-
 
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
