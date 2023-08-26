@@ -1,9 +1,9 @@
 {
   "name": "backend-api",
-  "version": "0.0.1",
-  "description": "",
-  "author": "",
-  "private": true,
+  "version": "1.0",
+  "description": "Backend API in a SAAS model",
+  "author": "Sumit Verma",
+  "private": false,
   "license": "UNLICENSED",
   "scripts": {
     "prebuild": "rimraf dist",
