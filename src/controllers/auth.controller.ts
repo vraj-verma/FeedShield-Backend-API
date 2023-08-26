@@ -42,7 +42,7 @@ export class AuthController {
           @Body(new ValidationPipe(JoiValidationSchema.signupSchema)) signup: Signup
      ) {
           const isAccountExist = await this.userService.getUserByEmail(signup.email);
-          console.log(isAccountExist)
+
           if (isAccountExist) {
                throw new HttpException(
                     `Account with email: ${signup.email} already exist, please login`,
@@ -90,8 +90,7 @@ export class AuthController {
           @Body(new ValidationPipe(JoiValidationSchema.signinSchema)) signin: Signin
      ) {
           const response: AuthUser = await this.userService.getUserByEmail(signin.email);
-          console.log(response, 'response')
-          console.log(signin, 'signin')
+
           if (!response) {
                throw new HttpException(
                     `Account with email: ${signin.email} does not exist, please signup`,
@@ -212,9 +211,7 @@ export class AuthController {
      async googleAuth(
           @Req() req: Request | any,
           @Res() res: Response
-     ) {
-          console.log(req.user)
-     }
+     ) { }
 
      @UseGuards(OAuthGuard)
      @Get('google/redirect')

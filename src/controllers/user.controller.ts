@@ -43,7 +43,6 @@ export class UserController {
      ) {
           const authUser: AuthUser = req.user;
 
-          console.log(authUser, '***')
           if (authUser.user_used >= authUser.user_limit) {
                throw new HttpException(
                     `User limit exceeded, please upgrade your plan or delete some users`,
