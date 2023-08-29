@@ -15,6 +15,7 @@ import { SuperAdminModule } from './admin/superAdmin.module';
 import { ConfigModule } from '@nestjs/config';
 import { GoogleStrategy } from './services/oauth/google.strategy';
 import { OAuthGuard } from './services/oauth/google.guard';
+import { BlacklistService } from './services/blacklist.service';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { OAuthGuard } from './services/oauth/google.guard';
   providers: [
     UserService,
     AccountService,
+    BlacklistService,
     JwtStrategy,
     AppService,
     FeedService,
@@ -49,11 +51,11 @@ import { OAuthGuard } from './services/oauth/google.guard';
   ]
 })
 
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(Logger).forRoutes('*');
-  }
-}
+// export class AppModule implements NestModule {
+//   configure(consumer: MiddlewareConsumer) {
+//     consumer.apply(Logger).forRoutes('*');
+//   }
+// }
 
 // for development
-// export class AppModule {}
+export class AppModule {}

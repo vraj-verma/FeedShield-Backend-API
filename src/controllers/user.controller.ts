@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt')
 import {
      Controller,
      Post,
@@ -8,7 +9,9 @@ import {
      HttpException,
      HttpStatus,
      Put,
-     Param, Delete
+     Param,
+     Delete,
+     Query,
 } from "@nestjs/common";
 import { AccountService } from "../services/account.service";
 import { Request, Response } from "express";
@@ -22,7 +25,7 @@ import { ValidationPipe } from "../pipes/joiValidation.pipe";
 import { JoiValidationSchema } from "../validation/schema.validation";
 import { RolesGuard } from "../services/auth/roles.guard";
 import { Roles } from "../services/auth/roles.decorator";
-const bcrypt = require('bcrypt')
+import { BlacklistService } from "src/services/blacklist.service";
 
 
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -32,7 +35,48 @@ export class UserController {
           private jwtService: JwtService,
           private userService: UserService,
           private accountService: AccountService,
+          private blacklistService: BlacklistService,
      ) { }
+
+     @Roles(Role.Super_Admin)
+     @Post('block')
+     async blockUser(
+          @Req() req: Request | any,
+          @Res() res: Response,
+          @Query('email') email: string,
+     ) {
+          const isBlocked = await this.blacklistService.getBlockedUser(email);
+          if (!isBlocked) {
+               const blocked = await this.blacklistService.blockUser(email);
+
+               if (!blocked) {
+                    throw new HttpException(
+                         `Unable to block user at this moment`,
+                         HttpStatus.NOT_IMPLEMENTED
+                    );
+               }
+
+               return res.status(201).json(
+                    {
+                         message: `You blocked the user with email: ${email}`
+                    }
+               )
+          }
+          const unBlocked = await this.blacklistService.unBlockUser(email);
+          if (!unBlocked) {
+               throw new HttpException(
+                    `Unable to unblock user at this moment`,
+                    HttpStatus.NOT_MODIFIED
+               );
+          }
+
+          return res.status(200).json(
+               {
+                    message: `You unblocked the user with email: ${email}`
+               }
+          );
+     }
+
 
      @Roles(Role.Super_Admin, Role.Admin)
      @Post()
@@ -78,7 +122,6 @@ export class UserController {
           };
 
           user.account_id = authUser.account_id;
-          user.created_at = new Date().toLocaleString();
           authUser.user_used = authUser.user_used + 1;
           await this.accountService.updateAccount(authUser.user_id, { user_used: authUser.user_used });
 
@@ -88,7 +131,7 @@ export class UserController {
                     `User not created, try again`,
                     HttpStatus.NOT_IMPLEMENTED
                );
-          } 
+          }
 
           const payload = {
                email: user.email,
@@ -103,6 +146,7 @@ export class UserController {
                token
           })
      }
+
 
      @Roles(Role.Super_Admin)
      @Put(':id')
@@ -120,8 +164,6 @@ export class UserController {
                     HttpStatus.NOT_FOUND
                );
           }
-
-          updateUser.updated_at = new Date().toLocaleString();
 
           const response = await this.userService.updateUser(id, updateUser);
           if (!response) {
@@ -172,4 +214,5 @@ export class UserController {
 
           res.status(200).json({ message: `User with id: ${user_id} deleted` })
      }
+
 }

@@ -1,9 +1,8 @@
 import * as mysql from 'mysql2/promise';
-
 export const mysqlConfig = [
      {
           provide: 'MYSQL_CONNECTION',
-          useFactory: (): mysql.Pool => {
+          useFactory: (): mysql.Pool => { 
                try {
                     const pool = mysql.createPool({
                          host: process.env.MYSQL_HOST,

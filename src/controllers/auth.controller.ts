@@ -26,12 +26,14 @@ import { JoinUser } from "../models/join-user.model";
 import { JwtAuthGuard } from "../services/auth/jwt-auth.guard";
 import { RolesGuard } from "../services/auth/roles.guard";
 import { Roles } from "../services/auth/roles.decorator";
-import { OAuthGuard } from "src/services/oauth/google.guard";
+import { OAuthGuard } from "../services/oauth/google.guard";
+import { BlacklistService } from "../services/blacklist.service";
 @Controller('auth')
 export class AuthController {
      constructor(
           private accountService: AccountService,
           private userService: UserService,
+          private blacklistService: BlacklistService,
           private jwtService: JwtService,
      ) { }
 
@@ -55,7 +57,6 @@ export class AuthController {
           signup.password = hash;
           signup.role = Role.Super_Admin;
           signup.status = Status.Active;
-          signup.created_at = new Date().toLocaleString();
           signup.joined = true;
           signup.access = true;
 
@@ -70,15 +71,16 @@ export class AuthController {
                ...signup, account_id
           });
 
-          const authUser: AuthUser = {
-               user_id,
-               account_id,
-               name: signup.name,
-               email: signup.email,
-               role: Role.Super_Admin,
-               // user_limit: 5,
-               created_at: new Date().toLocaleString(),
-          }
+          // const authUser: AuthUser = {
+          //      user_id,
+          //      account_id,
+          //      name: signup.name,
+          //      email: signup.email,
+          //      role: Role.Super_Admin,
+          //      // user_limit: 5,
+          // }
+
+          const authUser: AuthUser = await this.userService.getUserByEmail(signup.email);
 
           res.status(201).json(authUser);
      }
@@ -89,6 +91,16 @@ export class AuthController {
           @Res() res: Response,
           @Body(new ValidationPipe(JoiValidationSchema.signinSchema)) signin: Signin
      ) {
+
+          // check if user is blocked
+          const isBlocked = await this.blacklistService.getBlockedUser(signin.email);
+          if (isBlocked) {
+               throw new HttpException(
+                    `User with email: ${signin.email} is blocked, Please contact your Super Admin.`,
+                    HttpStatus.NOT_FOUND
+               );
+          }
+
           const response: AuthUser = await this.userService.getUserByEmail(signin.email);
 
           if (!response) {
@@ -167,7 +179,6 @@ export class AuthController {
                     joined: true,
                     user_id: token_decoded.user_id,
                     status: Status.Active,
-                    created_at: new Date().toLocaleString()
                }
           );
 
@@ -226,7 +237,6 @@ export class AuthController {
                const account_id = await this.accountService.createAccount({
                     user_limit: 5,
                     user_used: 1,
-                    created_at: new Date().toLocaleString()
                });
 
                // saving custom password as '123456' only in case of google auth
@@ -239,21 +249,22 @@ export class AuthController {
                     password: hash,
                     role: Role.Super_Admin,
                     status: Status.Active,
-                    created_at: new Date().toLocaleString(),
                     joined: true,
                     access: true,
                     account_id
                });
 
-               const authUser: AuthUser = {
-                    user_id,
-                    account_id,
-                    name: req.user.name,
-                    email: req.user.email,
-                    role: Role.Super_Admin,
-                    created_at: new Date().toLocaleString(),
-                    message: `Since you are using google auth, your password is '123456'.Please change it after login`
-               }
+               // const authUser: AuthUser = {
+               //      user_id,
+               //      account_id,
+               //      name: req.user.name,
+               //      email: req.user.email,
+               //      role: Role.Super_Admin,
+               //      created_at: new Date().toLocaleString(),
+               //      message: `Since you are using google auth, your password is '123456'.Please change it after login`
+               // }
+
+               const authUser: AuthUser = await this.userService.getUserByEmail(req.user.email);
 
                return res.status(201).json(authUser);
           }
@@ -268,7 +279,9 @@ export class AuthController {
           const token = this.jwtService.sign(payload);
           response.token = token;
 
-          res.status(200).json(response);
+          const { password, ...data } = response;
+
+          res.status(200).json(data);
 
      }
 }

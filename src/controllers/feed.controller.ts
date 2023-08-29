@@ -42,7 +42,6 @@ export class FeedController {
      ) {
           const authUser = <AuthUser>req.user;
           feed.user_id = authUser.user_id;
-          feed.created_at = new Date().toLocaleString();
 
           const response = await this.feedService.createFeed(feed);
           if (!response) {
@@ -86,7 +85,6 @@ export class FeedController {
      ) {
           const authUser: AuthUser = req.user;
           feed.user_id = authUser.user_id;
-          feed.updated_at = new Date().toLocaleString();
 
           const response = await this.feedService.updateFeed(feed_id, feed);
           if (!response) {

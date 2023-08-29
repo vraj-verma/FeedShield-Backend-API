@@ -3,7 +3,8 @@ import mysql, { ResultSetHeader, RowDataPacket } from 'mysql2/promise'
 import { Signup } from "../models/signup.model";
 import { JoinUser } from "../models/join-user.model";
 import { UpdateUser } from "../models/create-user.model";
-import { AuthUser } from "src/models/authuser.model";
+import { AuthUser } from "../models/authuser.model";
+
 
 @Injectable()
 export class UserService {
@@ -39,13 +40,12 @@ export class UserService {
      }
 
      async joinUser(joinUser: JoinUser) {
-          const sqlQuery = `UPDATE Users SET password = ?, joined = ?, status = ?, created_at = ? WHERE user_id = ?`;
+          const sqlQuery = `UPDATE Users SET password = ?, joined = ?, status = ? WHERE user_id = ?`;
           const [response] = await this.db.query<ResultSetHeader>(sqlQuery,
                [
                     joinUser.password,
                     joinUser.joined,
                     joinUser.status,
-                    joinUser.created_at,
                     joinUser.user_id,
                ]
           );
