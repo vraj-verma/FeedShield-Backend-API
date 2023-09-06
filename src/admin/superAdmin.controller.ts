@@ -6,7 +6,10 @@ import { RolesGuard } from "../services/auth/roles.guard";
 import { Roles } from "../services/auth/roles.decorator";
 import { Role } from "../models/signup.model";
 import { UserService } from "../services/user.service";
-
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { Logs } from "src/schema/logs.schema";
+import { AuthUser } from "src/models/authuser.model";
+@ApiTags('Admin Panel')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('admin')
 export class SuperAdminController {
@@ -15,6 +18,8 @@ export class SuperAdminController {
           private userService: UserService,
      ) { }
 
+     @ApiOperation({ summary: 'Get logs' })
+     @ApiResponse({ type: [Logs] })
      @Roles(Role.Super_Admin)
      @Get('logs')
      async getLogs(
@@ -37,6 +42,8 @@ export class SuperAdminController {
           res.status(200).json(objToJsson);
      }
 
+     @ApiOperation({ summary: 'Get Users' })
+     @ApiResponse({ type: [AuthUser] })
      @Roles(Role.Super_Admin)
      @Get('users')
      async getUsers(

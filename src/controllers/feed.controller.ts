@@ -15,8 +15,6 @@ import {
      Logger,
 } from "@nestjs/common";
 import { Request, Response } from 'express'
-import { FeedService } from "../services/feed.service";
-import { Feeds } from "../models/feeds.model";
 import { ValidationPipe } from "../pipes/joiValidation.pipe";
 import { JoiValidationSchema } from "../validation/schema.validation";
 import { JwtAuthGuard } from "../services/auth/jwt-auth.guard";
@@ -27,7 +25,8 @@ import { AuthUser } from "../models/authuser.model";
 import { FeedsService } from "../services/feeds.service";
 import { Feeds_ } from "../schema/feeds.schema";
 import { EmailService } from "../mail/email.service";
-
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+@ApiTags('Feeds')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('feed')
 export class FeedController {
@@ -37,12 +36,14 @@ export class FeedController {
           private emailService: EmailService
      ) { }
 
+     @ApiOperation({ summary: 'Create Feed' })
+     @ApiResponse({ type: Feeds_ })
      @Roles(Role.Super_Admin)
      @Post()
      async createFeed(
           @Req() req: any,
           @Res() res: Response,
-          @Body(new ValidationPipe(JoiValidationSchema.createFeedSchema)) feed: Feeds
+          @Body(new ValidationPipe(JoiValidationSchema.createFeedSchema)) feed: Feeds_
      ) {
           const authUser = <AuthUser>req.user;
           feed.user_id = authUser.user_id;
@@ -63,12 +64,21 @@ export class FeedController {
           )
      }
 
-     @Roles(Role.Super_Admin)
+     @ApiOperation({ summary: 'Get Feeds' })
+     @ApiResponse({ type: Feeds_ })
+     @Roles(Role.Super_Admin, Role.Admin, Role.Basic)
      @Get()
      async getFeeds(
-          @Req() req: Request,
+          @Req() req: Request | any,
           @Res() res: Response,
      ) {
+          const authUser: AuthUser = req.user;
+          if (authUser.role === Role.Basic && !authUser.access) {
+               throw new HttpException(
+                    `You don't have permission to access this API. Please contact to your Super Admin.`,
+                    HttpStatus.FORBIDDEN
+               );
+          }
           const response = await this.feedsService.getFeeds();
           if (!response) {
                throw new HttpException(
@@ -85,6 +95,8 @@ export class FeedController {
           );
      }
 
+     @ApiOperation({ summary: 'Update feed by id' })
+     @ApiResponse({ type: 'string' })
      @Roles(Role.Super_Admin)
      @Put(':id')
      async updateFeedById(
@@ -112,6 +124,8 @@ export class FeedController {
           );
      }
 
+     @ApiOperation({ summary: 'Delete deed by id' })
+     @ApiResponse({ type: 'string' })
      @Roles(Role.Super_Admin, Role.Admin)
      @Delete()
      async deleteFeedById(
@@ -146,6 +160,8 @@ export class FeedController {
           );
      }
 
+     @ApiOperation({ summary: 'Get feed by id' })
+     @ApiResponse({ type: Feeds_ })
      @Roles(Role.Super_Admin, Role.Admin, Role.Basic)
      @Get(':id')
      async getFeedById(

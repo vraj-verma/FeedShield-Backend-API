@@ -1,9 +1,23 @@
-export class Feeds {
-     feed_id?: number;
-     user_id?: number;
-     // name: string;
-     description: string;
-     url: string;
-     created_at?: Date | string;
-     updated_at?: Date | string;
-}
+// import { ApiProperty } from "@nestjs/swagger";
+
+// export class Feeds {
+
+//      @ApiProperty({ required: false })
+//      feed_id?: number;
+
+//      @ApiProperty({ required: false })
+//      user_id?: number;
+
+//      @ApiProperty({ required: true })
+//      // name: string;
+//      description: string;
+
+//      @ApiProperty({ required: true })
+//      url: string;
+
+//      @ApiProperty({ required: false })
+//      created_at?: Date | string;
+
+//      @ApiProperty({ required: false })
+//      updated_at?: Date | string;
+// }

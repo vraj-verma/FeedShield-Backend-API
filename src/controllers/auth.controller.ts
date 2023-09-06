@@ -29,6 +29,8 @@ import { Roles } from "../services/auth/roles.decorator";
 import { GoogleGuard } from "../services/oauth/google.guard";
 import { BlacklistService } from "../services/blacklist.service";
 import { DropBoxGuard } from "src/services/oauth/dropbox.guard";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
      constructor(
@@ -38,6 +40,8 @@ export class AuthController {
           private jwtService: JwtService,
      ) { }
 
+     @ApiOperation({ summary: 'Create an account' })
+     @ApiResponse({ type: AuthUser })
      @Post('signup')
      async signup(
           @Req() req: Request,
@@ -86,6 +90,8 @@ export class AuthController {
           res.status(201).json(authUser);
      }
 
+     @ApiOperation({ summary: 'Sign in to get JWT token' })
+     @ApiResponse({ type: AuthUser })
      @Post('signin')
      async signin(
           @Req() req: Request,
@@ -146,6 +152,8 @@ export class AuthController {
           res.status(200).json(response);
      }
 
+     @ApiOperation({ summary: 'Join user with JWT token' })
+     @ApiResponse({ type: 'string' })
      @Post('join-user')
      async joinUser(
           @Req() req: Request,
@@ -193,6 +201,8 @@ export class AuthController {
           res.status(200).json({ message: `Sucessfully Joined` })
      }
 
+     @ApiOperation({ summary: 'Delete an account' })
+     @ApiResponse({ type: 'string' })
      @UseGuards(JwtAuthGuard, RolesGuard)
      @Roles(Role.Super_Admin)
      @Delete('delete-account')
@@ -218,6 +228,7 @@ export class AuthController {
 
      }
 
+     @ApiOperation({ summary: 'OAuth with Google' })
      @UseGuards(GoogleGuard)
      @Get('google')
      async googleAuth(
@@ -225,6 +236,8 @@ export class AuthController {
           @Res() res: Response
      ) { }
 
+     @ApiOperation({ summary: 'OAuth with Google' })
+     @ApiResponse({ type: AuthUser })
      @UseGuards(GoogleGuard)
      @Get('google/redirect')
      async googleAuthRedirect(
@@ -286,16 +299,19 @@ export class AuthController {
 
      }
 
+     @ApiOperation({ summary: 'OAuth with Dropbox' })
      @UseGuards(DropBoxGuard)
      @Get('dropbox')
      async dropboxAuth() { }
 
+     @ApiOperation({ summary: 'OAuth with Dropbox' })
+     @ApiResponse({ type: AuthUser })
      @UseGuards(DropBoxGuard)
      @Get('dropbox/redirect')
      async dropboxAuthRedirect(
           @Req() req: Request | any,
-          @Res() res:Response,
-     ){
+          @Res() res: Response,
+     ) {
           return res.status(200).json(req.user);
      }
 }

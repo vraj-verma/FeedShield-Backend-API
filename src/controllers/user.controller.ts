@@ -26,8 +26,10 @@ import { JoiValidationSchema } from "../validation/schema.validation";
 import { RolesGuard } from "../services/auth/roles.guard";
 import { Roles } from "../services/auth/roles.decorator";
 import { BlacklistService } from "src/services/blacklist.service";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 
+@ApiTags('Users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('user')
 export class UserController {
@@ -38,6 +40,8 @@ export class UserController {
           private blacklistService: BlacklistService,
      ) { }
 
+     @ApiOperation({ summary: 'Block user' })
+     @ApiResponse({ type: 'string' })
      @Roles(Role.Super_Admin)
      @Post('block')
      async blockUser(
@@ -77,7 +81,8 @@ export class UserController {
           );
      }
 
-
+     @ApiOperation({ summary: 'Create an user' })
+     @ApiResponse({ type: Object })
      @Roles(Role.Super_Admin, Role.Admin)
      @Post()
      async createUser(
@@ -147,7 +152,8 @@ export class UserController {
           })
      }
 
-
+     @ApiOperation({ summary: 'Update user by id' })
+     @ApiResponse({ type: 'string' })
      @Roles(Role.Super_Admin)
      @Put(':id')
      async updateUser(
@@ -175,6 +181,8 @@ export class UserController {
           res.status(200).json({ message: `User with id: ${id} updated` })
      }
 
+     @ApiOperation({ summary: 'Delete an user' })
+     @ApiResponse({ type: 'string' })
      @Roles(Role.Super_Admin, Role.Admin)
      @Delete(':user_id')
      async deleteUser(
