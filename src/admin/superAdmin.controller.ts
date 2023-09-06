@@ -50,7 +50,13 @@ export class SuperAdminController {
                     HttpStatus.NOT_FOUND
                );
           }
-          res.status(200).json(response);
+          const total = response.length;
+          res.status(200).json(
+               {
+                    total,
+                    response
+               }
+          );
      }
 
 }

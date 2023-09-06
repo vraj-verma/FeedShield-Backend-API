@@ -1,13 +1,13 @@
 import { Strategy, VerifyCallBack } from 'passport-google-oauth20';
 import { PassportStrategy } from "@nestjs/passport";
 
-export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
+export class DropboxStrategy extends PassportStrategy(Strategy, 'dropbox') {
      constructor() {
-          super(
+          super( 
                {
-                    clientID: process.env.GOOGLE_CLIENT_ID,
-                    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-                    callbackURL: process.env.GOOGLE_CALLBACK_URL,
+                    clientID: process.env.DROPBOX_APP_KEY,
+                    clientSecret: process.env.DROPBOX_APP_SECRET,
+                    callbackURL: process.env.DROPBOX_CALLBACK_URL,
                     scope: ['email', 'profile'],
                }
           );

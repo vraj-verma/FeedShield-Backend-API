@@ -36,9 +36,10 @@ export class JoiValidationSchema {
     });
 
     static createFeedSchema = joi.object({
-        name: joi.string().required(),
+        topic: joi.string().required(),
         description: joi.string().required(),
-        url: joi.string().uri().required()
+        url: joi.string().uri().required(),
+        published: joi.boolean().optional().allow(0, 1)
     });
 
     static updateFeedSchema = joi.object({

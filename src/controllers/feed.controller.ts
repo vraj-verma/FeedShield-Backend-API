@@ -24,13 +24,17 @@ import { RolesGuard } from "../services/auth/roles.guard";
 import { Roles } from "../services/auth/roles.decorator";
 import { Role } from "../models/signup.model";
 import { AuthUser } from "../models/authuser.model";
+import { FeedsService } from "../services/feeds.service";
+import { Feeds_ } from "../schema/feeds.schema";
+import { EmailService } from "../mail/email.service";
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('feed')
 export class FeedController {
 
      constructor(
-          private feedService: FeedService,
+          private feedsService: FeedsService,
+          private emailService: EmailService
      ) { }
 
      @Roles(Role.Super_Admin)
@@ -43,13 +47,14 @@ export class FeedController {
           const authUser = <AuthUser>req.user;
           feed.user_id = authUser.user_id;
 
-          const response = await this.feedService.createFeed(feed);
+          const response = await this.feedsService.createFeed(feed);
           if (!response) {
                throw new HttpException(
                     'Feed not created',
                     HttpStatus.NOT_IMPLEMENTED
                );
           }
+          this.emailService.sendMail(response, authUser.name, authUser.role);
           res.status(201).json(
                {
                     ...feed,
@@ -57,22 +62,27 @@ export class FeedController {
                }
           )
      }
- 
+
      @Roles(Role.Super_Admin)
      @Get()
      async getFeeds(
           @Req() req: Request,
           @Res() res: Response,
      ) {
-          const response = await this.feedService.getFeeds();
+          const response = await this.feedsService.getFeeds();
           if (!response) {
                throw new HttpException(
                     `No feeds found`,
                     HttpStatus.NOT_FOUND
                );
           }
-
-          res.status(200).json(response);
+          const total = response.length;
+          res.status(200).json(
+               {
+                    total,
+                    response
+               }
+          );
      }
 
      @Roles(Role.Super_Admin)
@@ -81,12 +91,13 @@ export class FeedController {
           @Req() req: any,
           @Res() res: Response,
           @Param('id') feed_id: string,
-          @Body(new ValidationPipe(JoiValidationSchema.updateFeedSchema)) feed: Feeds
+          @Body(new ValidationPipe(JoiValidationSchema.updateFeedSchema)) feed: Feeds_
      ) {
           const authUser: AuthUser = req.user;
           feed.user_id = authUser.user_id;
 
-          const response = await this.feedService.updateFeed(feed_id, feed);
+          // const response = await this.feedService.updateFeed(feed_id, feed); // this was sql service
+          const response = await this.feedsService.updateFeedById(feed_id, feed); // changed to mongo service
           if (!response) {
                throw new HttpException(
                     'Feed not updated',
@@ -106,7 +117,7 @@ export class FeedController {
      async deleteFeedById(
           @Req() req: any,
           @Res() res: Response,
-          @Query('id') feed_id: any,
+          @Query('feed_id') feed_id: any,
      ) {
 
           const authUser: AuthUser = req.user;
@@ -121,7 +132,7 @@ export class FeedController {
                feed_id = feed_id.split(',');
           }
 
-          const response = await this.feedService.deleteFeed(feed_id);
+          const response = await this.feedsService.deleteFeedById(feed_id);
           if (!response) {
                throw new HttpException(
                     'Feed not found',
@@ -145,11 +156,11 @@ export class FeedController {
           const authUser: AuthUser = req.user;
           if (authUser.role === Role.Admin || authUser.role === Role.Basic && !authUser.access) {
                throw new HttpException(
-                    `You do not have access to get the feeds. Please contact your account administrator.`,
+                    `You do not have access to get the feeds. Please contact your Super Admin.`,
                     HttpStatus.FORBIDDEN
                );
           }
-          const response = await this.feedService.getFeedById(feed_id);
+          const response = await this.feedsService.getFeedById(feed_id);
           if (!response) {
                throw new HttpException(
                     'Feed not found',

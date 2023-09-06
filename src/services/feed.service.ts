@@ -15,7 +15,7 @@ export class FeedService {
           return response.insertId;
      }
 
-     async getFeeds(): Promise<Feeds> {
+     async getFeeds(): Promise<Feeds[]> {
           // check if redis has the result
           const redisHas = await redisClient.get('feeds');
           if (redisHas) {
@@ -29,7 +29,7 @@ export class FeedService {
           if (response) {
                redisClient.set('feeds', JSON.stringify(response));
           }
-          return response ? response as unknown as Feeds : null;
+          return response ? response as unknown as Feeds[] : null;
      }
 
      async getFeedById(id: string): Promise<any> {

@@ -4,6 +4,7 @@ import { Request, Response, NextFunction } from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
 import { AuthUser } from '../models/authuser.model';
+import { LogsService } from '../services/admin/logs.service';
 
 
 @Injectable()
@@ -12,7 +13,10 @@ export class Logger implements NestMiddleware {
      private logFile: string;
      private jwtService: JwtService;
 
-     constructor(jwtService: JwtService) {
+     constructor(
+          jwtService: JwtService,
+          private logsService: LogsService,
+     ) {
           this.jwtService = jwtService;
           this.createLogFile();
           setInterval(() => {
@@ -66,6 +70,8 @@ export class Logger implements NestMiddleware {
                Operation: `${req.originalUrl}`,
                User_Agent: `${req.headers['user-agent']}`,
           };
+
+          this.logsService.createLogs(logMessage);
 
           const jsonFile = JSON.stringify(logMessage).trim();
           fs.appendFileSync(this.logFile, jsonFile);

@@ -26,8 +26,9 @@ import { JoinUser } from "../models/join-user.model";
 import { JwtAuthGuard } from "../services/auth/jwt-auth.guard";
 import { RolesGuard } from "../services/auth/roles.guard";
 import { Roles } from "../services/auth/roles.decorator";
-import { OAuthGuard } from "../services/oauth/google.guard";
+import { GoogleGuard } from "../services/oauth/google.guard";
 import { BlacklistService } from "../services/blacklist.service";
+import { DropBoxGuard } from "src/services/oauth/dropbox.guard";
 @Controller('auth')
 export class AuthController {
      constructor(
@@ -217,14 +218,14 @@ export class AuthController {
 
      }
 
-     @UseGuards(OAuthGuard)
+     @UseGuards(GoogleGuard)
      @Get('google')
      async googleAuth(
           @Req() req: Request | any,
           @Res() res: Response
      ) { }
 
-     @UseGuards(OAuthGuard)
+     @UseGuards(GoogleGuard)
      @Get('google/redirect')
      async googleAuthRedirect(
           @Req() req: Request | any,
@@ -283,5 +284,18 @@ export class AuthController {
 
           res.status(200).json(data);
 
+     }
+
+     @UseGuards(DropBoxGuard)
+     @Get('dropbox')
+     async dropboxAuth() { }
+
+     @UseGuards(DropBoxGuard)
+     @Get('dropbox/redirect')
+     async dropboxAuthRedirect(
+          @Req() req: Request | any,
+          @Res() res:Response,
+     ){
+          return res.status(200).json(req.user);
      }
 }

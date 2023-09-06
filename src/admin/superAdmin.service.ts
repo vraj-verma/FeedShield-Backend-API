@@ -18,7 +18,7 @@ export class SuperAdminService {
                               return await fs.promises.readFile(path.join(this.folderPath, file), 'utf8');
                          } catch (err) {
                               console.log(`Error reading file: ${file}`, err);
-                              return null;
+                              return false;
                          }
                     })
                );
