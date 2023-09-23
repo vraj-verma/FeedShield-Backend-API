@@ -1,3 +1,4 @@
+
 const bcrypt = require('bcrypt')
 import {
      Controller,
@@ -25,8 +26,9 @@ import { ValidationPipe } from "../pipes/joiValidation.pipe";
 import { JoiValidationSchema } from "../validation/schema.validation";
 import { RolesGuard } from "../services/auth/roles.guard";
 import { Roles } from "../services/auth/roles.decorator";
-import { BlacklistService } from "src/services/blacklist.service";
+import { BlacklistService } from "../services/blacklist.service";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { EmailService } from "../notification/email.service";
 
 
 @ApiTags('Users')
@@ -38,6 +40,7 @@ export class UserController {
           private userService: UserService,
           private accountService: AccountService,
           private blacklistService: BlacklistService,
+          private emailService: EmailService
      ) { }
 
      @ApiOperation({ summary: 'Block user' })
@@ -146,6 +149,7 @@ export class UserController {
 
           const token = this.jwtService.sign(payload);
 
+          this.emailService.userCreatedMail(authUser.name, user.name, user.role);
           res.status(201).json({
                message: `User created with id: ${user_id}, please join with the token`,
                token

@@ -30,7 +30,7 @@ import { GoogleGuard } from "../services/oauth/google.guard";
 import { BlacklistService } from "../services/blacklist.service";
 import { DropBoxGuard } from "src/services/oauth/dropbox.guard";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
-@ApiTags('Auth')
+@ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
      constructor(
@@ -68,7 +68,7 @@ export class AuthController {
           const account_id = await this.accountService.createAccount({
                user_limit: 5,
                user_used: 1,
-               created_at: new Date().toLocaleString()
+               // created_at: new Date().toLocaleString()
 
           });
 

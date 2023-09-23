@@ -25,7 +25,9 @@ import { LogsService } from './services/admin/logs.service';
 import { DropBoxGuard } from './services/oauth/dropbox.guard';
 import { DropboxStrategy } from './services/oauth/dropbox.strategy';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { EmailService } from './mail/email.service';
+import { EmailService } from './notification/email.service';
+import { OTP, OTPSchema } from './schema/otp.schema';
+import { OTPService } from './services/otp.service';
 
 @Module({
   imports: [
@@ -42,6 +44,9 @@ import { EmailService } from './mail/email.service';
         },
         {
           name: Logs.name, schema: LogsSchema
+        },
+        {
+          name: OTP.name, schema: OTPSchema
         }
       ]
     ),
@@ -81,20 +86,21 @@ import { EmailService } from './mail/email.service';
     DropboxStrategy,
     DropBoxGuard,
     EmailService,
+    OTPService,
   ],
   exports: [
     UserService,
   ]
 })
 
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(Logger)
-      // .exclude({ path: 'admin/logs', method: RequestMethod.GET })
-      .forRoutes('*');
-  }
-}
+// export class AppModule implements NestModule {
+//   configure(consumer: MiddlewareConsumer) {
+//     consumer
+//       .apply(Logger)
+//       // .exclude({ path: 'admin/logs', method: RequestMethod.GET })
+//       .forRoutes('*');
+//   }
+// }
 
 // for development
-// export class AppModule {}
+export class AppModule { }

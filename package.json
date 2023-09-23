@@ -33,6 +33,7 @@
     "@types/nodemailer": "^6.4.9",
     "bcrypt": "^5.1.0",
     "dotenv": "^16.3.1",
+    "googleapis": "^126.0.1",
     "ioredis": "^5.3.2",
     "joi": "^17.9.2",
     "mongoose": "^7.5.0",

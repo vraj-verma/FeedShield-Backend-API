@@ -3,6 +3,7 @@ import { Inject, Injectable } from "@nestjs/common";
 // import { Feeds } from '../models/feeds.model';
 import redisClient from '../db/redis.config';
 import { Feeds_ } from 'src/schema/feeds.schema';
+import { Feeds } from 'src/models/feeds.model';
 
 @Injectable()
 export class FeedService {
@@ -10,13 +11,13 @@ export class FeedService {
           @Inject('MYSQL_CONNECTION') private db: mysql.Connection,
      ) { }
 
-     async createFeed(feed: Feeds_): Promise<number> {
+     async createFeed(feed: Feeds): Promise<number> {
           const sqlQuery = `INSERT INTO Feeds SET ?`;
           const [response] = await this.db.query<ResultSetHeader>(sqlQuery, [feed]);
           return response.insertId;
      }
 
-     async getFeeds(): Promise<Feeds_[]> {
+     async getFeeds(): Promise<Feeds[]> {
           // check if redis has the result
           const redisHas = await redisClient.get('feeds');
           if (redisHas) {
@@ -30,7 +31,7 @@ export class FeedService {
           if (response) {
                redisClient.set('feeds', JSON.stringify(response));
           }
-          return response ? response as unknown as Feeds_[] : null;
+          return response ? response as unknown as Feeds[] : null;
      }
 
      async getFeedById(id: string): Promise<any> {
@@ -57,13 +58,13 @@ export class FeedService {
           return response ? response : null;
      }
 
-     async updateFeed(id: string, feed: Feeds_): Promise<boolean> {
+     async updateFeed(id: string, feed: Feeds): Promise<boolean> {
           const sqlQuery = `UPDATE Feeds SET ? WHERE feed_id = ?`;
           const [response] = await this.db.query<ResultSetHeader>(sqlQuery, [feed, id]);
           return response ? response.affectedRows > 0 : null
      }
 
-     async deleteFeed(id: any): Promise<boolean> {
+     async deleteFeedById(id: any): Promise<boolean> {
           const sqlQuery = `DELETE FROM Feeds WHERE feed_id IN (?)`;
           const [response] = await this.db.query<ResultSetHeader>(sqlQuery, [id]);
           return response ? response.affectedRows > 0 : null
