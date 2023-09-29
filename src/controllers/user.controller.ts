@@ -13,6 +13,7 @@ import {
      Param,
      Delete,
      Query,
+     Get,
 } from "@nestjs/common";
 import { AccountService } from "../services/account.service";
 import { Request, Response } from "express";
@@ -29,6 +30,7 @@ import { Roles } from "../services/auth/roles.decorator";
 import { BlacklistService } from "../services/blacklist.service";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { EmailService } from "../notification/email.service";
+import { DownloadService } from "src/services/download.service";
 
 
 @ApiTags('Users')
@@ -40,7 +42,8 @@ export class UserController {
           private userService: UserService,
           private accountService: AccountService,
           private blacklistService: BlacklistService,
-          private emailService: EmailService
+          private emailService: EmailService,
+          private downloadService: DownloadService,
      ) { }
 
      @ApiOperation({ summary: 'Block user' })
@@ -226,5 +229,4 @@ export class UserController {
 
           res.status(200).json({ message: `User with id: ${user_id} deleted` })
      }
-
 }

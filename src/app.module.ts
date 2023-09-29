@@ -28,6 +28,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { EmailService } from './notification/email.service';
 import { OTP, OTPSchema } from './schema/otp.schema';
 import { OTPService } from './services/otp.service';
+import { DownloadService } from './services/download.service';
 
 @Module({
   imports: [
@@ -87,6 +88,7 @@ import { OTPService } from './services/otp.service';
     DropBoxGuard,
     EmailService,
     OTPService,
+    DownloadService,
   ],
   exports: [
     UserService,

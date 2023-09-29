@@ -1,8 +1,6 @@
 import mysql, { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import { Inject, Injectable } from "@nestjs/common";
-// import { Feeds } from '../models/feeds.model';
 import redisClient from '../db/redis.config';
-import { Feeds_ } from '../schema/feeds.schema';
 import { Feeds } from '../models/feeds.model';
 
 @Injectable()
@@ -19,10 +17,10 @@ export class FeedService {
 
      async getFeeds(): Promise<Feeds[]> {
           // check if redis has the result
-          const redisHas = await redisClient.get('feeds');
-          if (redisHas) {
-               return JSON.parse(redisHas);
-          }
+          // const redisHas = await redisClient.get('feeds');
+          // if (redisHas) {
+          //      return JSON.parse(redisHas);
+          // }
 
           const sqlQuery = `SELECT * FROM Feeds`;
           const [response] = await this.db.query<RowDataPacket[]>(sqlQuery);
@@ -38,7 +36,6 @@ export class FeedService {
           // return result from redis if exists
           const redisHas = await redisClient.get(id);
           if (redisHas) {
-               console.log('redis')
                return JSON.parse(redisHas);
           }
           const sqlQuery = `SELECT * FROM Feeds WHERE feed_id = ?`;

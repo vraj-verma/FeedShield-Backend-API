@@ -27,6 +27,7 @@ import { EmailService } from "../notification/email.service";
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { FeedService } from "../services/feed.service";
 import { Feeds } from "../models/feeds.model";
+import { DownloadService } from "src/services/download.service";
 
 @ApiTags('Feeds')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -34,11 +35,35 @@ import { Feeds } from "../models/feeds.model";
 export class FeedController {
 
      constructor(
-          private feedsService: FeedsService,
+          // private feedsService: FeedsService,
           private feedService: FeedService,
           private emailService: EmailService,
-          // private otpService: OTPService
+          // private otpService: OTPService,
+          private downloadService: DownloadService,
      ) { }
+
+     @Get('download')
+     async download(
+          @Req() req: Request | any,
+          @Res() res: Response,
+     ) {
+          const authUser: AuthUser = req.user;
+          if (authUser.role === Role.Basic && !authUser.access) {
+               throw new HttpException(
+                    `You don't have permission to access this API. Please contact to your Super Admin.`,
+                    HttpStatus.FORBIDDEN
+               );
+          }
+          // const response = await this.feedsService.getFeeds();
+          const response = await this.feedService.getFeeds();
+          if (!response) {
+               throw new HttpException(
+                    `No feeds found`,
+                    HttpStatus.NOT_FOUND
+               );
+          }
+          await this.downloadService.downloadData(res, response);
+     }
 
      @ApiOperation({ summary: 'Create Feed' })
      @ApiResponse({ type: Feeds_ })
@@ -124,7 +149,7 @@ export class FeedController {
           if (typeof feed_id == 'string') {
                feed_id = feed_id.split(',');
           }
-          
+
           // const response = await this.feedsService.deleteFeedById(feed_id);
           const response = await this.feedService.deleteFeedById(feed_id);
           if (!response) {
