@@ -10,7 +10,6 @@ export class OTPService {
      ) { }
 
      async createOTP(otp: number, feed_id: any, deleted_by: string) {
-          console.log(feed_id)
           const data = { otp, feed_id, deleted_by };
           return await new this.otpModel(data).save();
      }

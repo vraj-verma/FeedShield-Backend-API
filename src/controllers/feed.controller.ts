@@ -12,7 +12,6 @@ import {
      Put,
      Delete,
      Get,
-     Logger,
 } from "@nestjs/common";
 import { Request, Response } from 'express'
 import { ValidationPipe } from "../pipes/joiValidation.pipe";
@@ -25,10 +24,10 @@ import { AuthUser } from "../models/authuser.model";
 import { FeedsService } from "../services/feeds.service";
 import { Feeds_ } from "../schema/feeds.schema";
 import { EmailService } from "../notification/email.service";
-import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { OTPService } from "../services/otp.service";
+import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { FeedService } from "../services/feed.service";
 import { Feeds } from "../models/feeds.model";
+
 @ApiTags('Feeds')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('feed')
@@ -36,9 +35,9 @@ export class FeedController {
 
      constructor(
           private feedsService: FeedsService,
-          private feedService:FeedService,
+          private feedService: FeedService,
           private emailService: EmailService,
-          private otpService: OTPService
+          // private otpService: OTPService
      ) { }
 
      @ApiOperation({ summary: 'Create Feed' })
@@ -48,14 +47,14 @@ export class FeedController {
      async createFeed(
           @Req() req: any,
           @Res() res: Response,
-          @Body(new ValidationPipe(JoiValidationSchema.createFeedSchema)) feed: Feeds_
+          @Body(new ValidationPipe(JoiValidationSchema.createFeedSchema)) feed: Feeds
           // @Body() feed: Feeds
      ) {
           const authUser = <AuthUser>req.user;
           feed.user_id = authUser.user_id;
 
-          const response = await this.feedsService.createFeed(feed);
-          // const response:any = await this.feedService.createFeed(feed);
+          // const response = await this.feedsService.createFeed(feed);
+          const response: any = await this.feedService.createFeed(feed);
           if (!response) {
                throw new HttpException(
                     'Feed not created',
@@ -86,8 +85,8 @@ export class FeedController {
                     HttpStatus.FORBIDDEN
                );
           }
-          const response = await this.feedsService.getFeeds();
-          // const response = await this.feedService.getFeeds();
+          // const response = await this.feedsService.getFeeds();
+          const response = await this.feedService.getFeeds();
           if (!response) {
                throw new HttpException(
                     `No feeds found`,
@@ -103,40 +102,11 @@ export class FeedController {
           );
      }
 
-     @ApiOperation({ summary: 'Update feed by id' })
-     @ApiResponse({ type: 'string' })
-     @Roles(Role.Super_Admin)
-     @Put(':id')
-     async updateFeedById(
-          @Req() req: any,
-          @Res() res: Response,
-          @Param('id') feed_id: string,
-          @Body(new ValidationPipe(JoiValidationSchema.updateFeedSchema)) feed: Feeds_
-          // @Body(new ValidationPipe(JoiValidationSchema.updateFeedSchema)) feed: Feeds
-     ) {
-          const authUser: AuthUser = req.user;
-          feed.user_id = authUser.user_id;
-
-          // const response = await this.feedService.updateFeed(feed_id, feed); // this was sql service
-          const response = await this.feedsService.updateFeedById(feed_id, feed); // changed to mongo service
-          if (!response) {
-               throw new HttpException(
-                    'Feed not updated',
-                    HttpStatus.NOT_IMPLEMENTED
-               );
-          }
-          res.status(200).json(
-               {
-                    ...feed,
-                    message: `Feed with id: ${feed_id} updated successfully`,
-               }
-          );
-     }
-
      @ApiOperation({ summary: 'Delete feed by id' })
+     @ApiQuery({ type: "string", name: "feed_id" })
      @ApiResponse({ type: 'string' })
      @Roles(Role.Super_Admin, Role.Admin)
-     @Delete()
+     @Delete('delete')
      async deleteFeedById(
           @Req() req: any,
           @Res() res: Response,
@@ -154,16 +124,9 @@ export class FeedController {
           if (typeof feed_id == 'string') {
                feed_id = feed_id.split(',');
           }
-
-          const randomOTP = Math.floor(Math.random() * 10000);
-
-          const otp = await this.otpService.createOTP(randomOTP, feed_id[0], authUser.name);
-          if (otp) {
-               await this.emailService.otpMail(randomOTP, feed_id);
-          }
-
-          const response = await this.feedsService.deleteFeedById(feed_id);
-          // const response = await this.feedService.deleteFeedById(feed_id);
+          
+          // const response = await this.feedsService.deleteFeedById(feed_id);
+          const response = await this.feedService.deleteFeedById(feed_id);
           if (!response) {
                throw new HttpException(
                     'Feed not found',
@@ -173,6 +136,36 @@ export class FeedController {
           res.status(200).json(
                {
                     message: `Feed with id: ${feed_id} deleted successfully`,
+               }
+          );
+     }
+
+     @ApiOperation({ summary: 'Update feed by id' })
+     @ApiResponse({ type: 'string' })
+     @Roles(Role.Super_Admin)
+     @Put(':id')
+     async updateFeedById(
+          @Req() req: any,
+          @Res() res: Response,
+          @Param('id') feed_id: string,
+          // @Body(new ValidationPipe(JoiValidationSchema.updateFeedSchema)) feed: Feeds_
+          @Body(new ValidationPipe(JoiValidationSchema.updateFeedSchema)) feed: Feeds
+     ) {
+          const authUser: AuthUser = req.user;
+          feed.user_id = authUser.user_id;
+
+          const response = await this.feedService.updateFeed(feed_id, feed); // this was sql service
+          // const response = await this.feedsService.updateFeedById(feed_id, feed); // changed to mongo service
+          if (!response) {
+               throw new HttpException(
+                    'Feed not updated',
+                    HttpStatus.NOT_IMPLEMENTED
+               );
+          }
+          res.status(200).json(
+               {
+                    ...feed,
+                    message: `Feed with id: ${feed_id} updated successfully`,
                }
           );
      }
@@ -193,8 +186,8 @@ export class FeedController {
                     HttpStatus.FORBIDDEN
                );
           }
-          const response = await this.feedsService.getFeedById(feed_id);
-          // const response = await this.feedService.getFeedById(feed_id);
+          // const response = await this.feedsService.getFeedById(feed_id);
+          const response = await this.feedService.getFeedById(feed_id);
           if (!response) {
                throw new HttpException(
                     'Feed not found',

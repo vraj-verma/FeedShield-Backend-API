@@ -46,7 +46,7 @@ export class EmailService {
           });
      }
 
-     async otpMail(otp: any, feed_id: string) {
+     async otpMail(otp: any, feed_id: any) {
           const htmlTemplate = otpEmailTemplate.replace('{feed_id}', feed_id).replace('{otp}', otp);
 
           await this.mailerService.sendMail({

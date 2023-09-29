@@ -2,8 +2,8 @@ import mysql, { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import { Inject, Injectable } from "@nestjs/common";
 // import { Feeds } from '../models/feeds.model';
 import redisClient from '../db/redis.config';
-import { Feeds_ } from 'src/schema/feeds.schema';
-import { Feeds } from 'src/models/feeds.model';
+import { Feeds_ } from '../schema/feeds.schema';
+import { Feeds } from '../models/feeds.model';
 
 @Injectable()
 export class FeedService {
@@ -69,8 +69,4 @@ export class FeedService {
           const [response] = await this.db.query<ResultSetHeader>(sqlQuery, [id]);
           return response ? response.affectedRows > 0 : null
      }
-
-
-
-
 }
